@@ -1,0 +1,11 @@
+Todo:
+	- Get snake to move continuously
+	- change getHeadPosition() to return the head position so it can be used for collisions
+	- implement fruit logic
+	- implement collision logic
+		- Walls
+		- Body
+	- Implement a score
+		- Score Leaderboard?
+		- Write to score to screen?
+	- Colors? 

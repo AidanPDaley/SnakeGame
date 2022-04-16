@@ -10,7 +10,6 @@ int height = 30;
 int width = 179;
  
 void snakepit();
-
 // =================== SNAKE CODE =========================
 // Author: Aidan Daley and Darby Scott
 
@@ -37,6 +36,8 @@ Snake* snakeInit(int x, int y) {
 } // returns a memory address
 
 // This function is primarily for testing purposes. It just gives the x and y of the head.
+// Later this function will be changed and used for collision and fruit collection logic. 
+// May need to be split into 2 functions.
 void getSnakeHeadPosition(Snake* snakeHead) {
 	printf("Head x: %d, y: %d\n", snakeHead->x, snakeHead->y);
 }
@@ -51,7 +52,6 @@ void printSnake(Snake* head) {
 
 // This function takes a pointer to the head of snake and moves the snake in whatever way we determine
 // By updating the x and y values of the snake.
-// Currently it just moves the snake's head, but soon we will move the entire body.
 void moveSnake(Snake* snakeHead, int newX, int newY) {
 	
 	// Updates the last position, this will be useful for growing the snake
@@ -69,8 +69,8 @@ void moveSnake(Snake* snakeHead, int newX, int newY) {
 
 // takes input from the user and moves the snake using the moveSnakeMethod.
 // Author: Tori
-void controlSnake(Snake* head) {
-	getSnakeHeadPosition(head);
+int controlSnake(Snake* head) {
+	// getch data type is char.
 	switch (getch()) {         
           case KEY_UP:        
              moveSnake(head, head->x - 1,head->y + 0); 
@@ -84,7 +84,10 @@ void controlSnake(Snake* head) {
          case KEY_RIGHT:         
              moveSnake(head, head->x + 0,head->y + 1);       
          break;
-     }
+	 default:
+	 	return 1;
+	}
+	return 0;
 }
 
 
@@ -100,8 +103,12 @@ void growSnake(Snake *head) {
 }
 
 // Free all memory and end the game.
-void killSnake(Snake* head);
-
+void killSnake(Snake* head) {
+	Snake *temp = head;
+	if (temp->next != NULL)
+		temp = temp->next;
+	free(temp);
+}
 // Check for collisions
 void checkSnakeCollision(Snake *head);
 
@@ -158,8 +165,8 @@ int main()
 	initscr();
   	// create the snake head as a pointer.
 	Snake *head = snakeInit(LINES/2, COLS/2);     
-	growSnake(head);
-	growSnake(head);
+	for (int i; i < 5; i++)
+		growSnake(head);
 	
  	noecho();
  	curs_set(0);
@@ -170,11 +177,15 @@ int main()
 		clear();
 		snakepit();
 		drawSnake(head);
-		controlSnake(head);	
+
+		// if any key but the arrow keys are pressed, end the game.
+		int keyInput = controlSnake(head);
+        	if (keyInput == 1)
+			break;
 		refresh();
 	}
 	endwin();
-	free(head);
+	killSnake(head);
   	return 0;
 }
 
