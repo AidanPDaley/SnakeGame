@@ -1,6 +1,6 @@
-//CS 355
-//Snake Game
-//Cassidy, Tori, Darby, Aidan
+// CS 355
+// Snake Game
+// Cassidy, Tori, Darby, Aidan
  
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,7 +12,7 @@ int width = 179;
 void snakepit();
 
 // =================== SNAKE CODE =========================
-// Author: Aidan Daley
+// Author: Aidan Daley and Darby Scott
 
 // This is the structure that the snake will be made of
 // Each part of the body links to the next part of the body until you reach the tail.
@@ -46,47 +46,44 @@ void printSnake(Snake* head) {
         printf("[x: %d, y: %d]\n", head->x, head->y);
         if (head->next != NULL)
                 printSnake(head->next);
-
 }
 
 
 // This function takes a pointer to the head of snake and moves the snake in whatever way we determine
 // By updating the x and y values of the snake.
 // Currently it just moves the snake's head, but soon we will move the entire body.
-void moveSnake(Snake* snakeHead, int changeX, int changeY) {
+void moveSnake(Snake* snakeHead, int newX, int newY) {
 	
 	// Updates the last position, this will be useful for growing the snake
 	snakeHead->lastX = snakeHead->x;
 	snakeHead->lastY = snakeHead->y;
 	
 	// Update the x and the y position
-	snakeHead->x = snakeHead->x + changeX;
-	snakeHead->y = snakeHead->y + changeY;
-	
-	// Debugging purposes. This just prints the head of the snake
-	getSnakeHeadPosition(snakeHead);
+	snakeHead->x = newX;
+	snakeHead->y = newY;
 
+	// if we aren't at the tail of the snake, update the next body part.
+	if (snakeHead->next != NULL)
+		moveSnake(snakeHead->next, snakeHead->lastX, snakeHead->lastY);
 }
 
 // takes input from the user and moves the snake using the moveSnakeMethod.
+// Author: Tori
 void controlSnake(Snake* head) {
 	getSnakeHeadPosition(head);
 	switch (getch()) {         
           case KEY_UP:        
-             moveSnake(head, -1,0); //snakeMove(head,x, y);
+             moveSnake(head, head->x - 1,head->y + 0); 
          break;
          case KEY_DOWN:
-             moveSnake(head, 1,0);
+             moveSnake(head, head->x + 1,head->y + 0);
          break;
          case KEY_LEFT:
-	     moveSnake(head, 0,-1);
+	     moveSnake(head, head->x + 0,head->y + -1);
          break;                                        
          case KEY_RIGHT:         
-             moveSnake(head, 0,1);       
+             moveSnake(head, head->x + 0,head->y + 1);       
          break;
-	 case 'x':
-	 endwin(); // close curses
-	 break;
      }
 }
 
@@ -101,11 +98,6 @@ void growSnake(Snake *head) {
 	
 	temp->next = snakeInit(temp->lastX, temp->lastY);
 }
-// This is a little tricky. Does the segment get added at the end of snake?
-// Does this mean we should be tracking the last position of each body part of the snake?
-// That way, when we get down to the tail, we just give it the coords of where the tail was
-// last? I suppose that would work well. I'm going to think on it some more and see if I can
-// find a better solution. (If we do this solution, we have to edit the move function);
 
 // Free all memory and end the game.
 void killSnake(Snake* head);
@@ -113,19 +105,19 @@ void killSnake(Snake* head);
 // Check for collisions
 void checkSnakeCollision(Snake *head);
 
-// draw Snake (CURRENTLY ONLY DRAWS HEAD OF SNAKE. COULD BE ISSUE WITH THIS FUNCTION OR GROWSNAKE()).
+// Draw Snake 
+// Author: Tori
 void drawSnake(Snake *head) {
 	Snake *temp = head;
-	printSnake(head);
 	
 	move(temp->x, temp->y);
 	addstr("@");
 
-
+	// if there is more of the snake, draw the next part
 	if (temp->next != NULL) {
 		temp = temp->next;
+		drawSnake(temp);
 	}
-	refresh();
 }
 //============== End of Snake Code ========================
 
@@ -136,9 +128,6 @@ void snakepit()
 {
    int i;
    int j;
- 
-//   initscr(); // Moved to main loop
-//   clear(); // Move to main loop
  
    for(i = 0; i < LINES; i++)
    {
@@ -159,16 +148,10 @@ void snakepit()
        }
    }
   
-   refresh(); // Added to main 
-   //getch();
-   //endwin();
-  
 }
 
 
  //main method
- // Right now I'm just testing Code. I will implement a game loop and everything later.
- // - Aidan :)
 int main()    
 {      
 	// ===================== Initializing Game ==========================
@@ -177,25 +160,19 @@ int main()
 	Snake *head = snakeInit(LINES/2, COLS/2);     
 	growSnake(head);
 	growSnake(head);
-	growSnake(head);
-	//printSnake(head);
 	
-	//clear(); // does this need to be moved to the game loop? I think so
  	noecho();
  	curs_set(0);
-	//init_pair(1, COLOR_BLACK, COLOR_RED);
 	keypad(stdscr, TRUE);
 
 	// ========================= Game Loop ===============================
-
 	while(1) {
 		clear();
-  		drawSnake(head);	
-		snakepit();	
+		snakepit();
+		drawSnake(head);
 		controlSnake(head);	
 		refresh();
 	}
-	//snakepit();
 	endwin();
 	free(head);
   	return 0;
